@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Подсчет прожитого времени</title>
   <style>
-    /* Общий «футуристичный» стиль страницы */
+    /* Небольшой "футуристичный" дизайн, как пример */
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       background: #0f0f0f; /* тёмный фон */
@@ -12,7 +12,7 @@
       margin: 20px;
     }
     h1, h3, label, span {
-      color: #00ffcc; /* общий цвет */
+      color: #00ffcc;
     }
     input, button {
       background: #222;
@@ -28,7 +28,6 @@
       height: 24px;
     }
     
-    /* Стили для кружочков */
     .circle {
       width: 10px;
       height: 10px;
@@ -36,21 +35,20 @@
       display: inline-block;
       margin: 2px;
       vertical-align: middle;
+      background: #555; /* по умолчанию */
     }
-    
-    /* Строка (год) — если нам нужны строки */
+    .circle:hover {
+      outline: 1px solid #fff;
+      cursor: pointer;
+    }
     .year-row {
       margin-bottom: 5px;
-      white-space: nowrap; /* чтобы год и кружочки шли в одну линию */
+      white-space: nowrap;
     }
-    
-    /* Блок для процентов */
     #percent-info {
       font-weight: bold;
       margin: 10px 0;
     }
-    
-    /* Блок управления */
     #controls {
       margin-bottom: 20px;
     }
@@ -61,17 +59,9 @@
       display: inline-block;
       width: 120px;
     }
-    
-    /* Горизонтальная полоса для режима "год" */
     #year-row-horizontal {
       margin-bottom: 20px;
-      white-space: nowrap; /* принудительно не переносить круги на новую строку */
-    }
-    
-    /* При наведении – более яркий кружок */
-    .circle:hover {
-      outline: 2px solid #fff;
-      cursor: pointer;
+      white-space: nowrap; /* не переносить на другую строку */
     }
   </style>
 </head>
@@ -93,7 +83,6 @@
     
     <h3>Важные даты (до 10 штук):</h3>
     <div id="importantDates">
-      <!-- Пример заготовленных полей: -->
       <div class="important-event">
         <label>Дата 1:</label>
         <input type="date" class="important-date">
@@ -149,18 +138,12 @@
     <button style="margin-top:10px;" onclick="calculate()">Показать результат</button>
   </div>
   
-  <!-- Блок для процентов (над таблицей) -->
   <div id="percent-info"></div>
-  
-  <!-- Основной блок для вывода таблицы кружочков -->
   <div id="result"></div>
   
   <script>
-    // Вспомогательная функция для «склонения» слова «год/года/лет» по возрасту
+    // Функция склонения "год/года/лет"
     function getYearWord(age) {
-      // В русском языке:
-      // 1 год, 2-4 года, 5-20 лет, 21 год, 22-24 года, 25-30 лет и т.д.
-      // Учитываем только последнюю цифру + исключение для 11-14
       const lastTwo = age % 100;
       const lastDigit = age % 10;
       if (lastTwo >= 11 && lastTwo <= 14) {
@@ -172,10 +155,9 @@
       }
     }
 
-    // Функция разницы в годах (учитываем месяц и день, чтобы не завысить возраст на неполный год)
     function getYearDiff(date1, date2) {
       let diff = date2.getFullYear() - date1.getFullYear();
-      // проверяем, не "полный" ли год: если месяц/день еще не наступили, вычитаем 1
+      // проверяем, не полный ли год
       if (
         date2.getMonth() < date1.getMonth() ||
         (date2.getMonth() === date1.getMonth() && date2.getDate() < date1.getDate())
@@ -185,18 +167,16 @@
       return diff;
     }
 
-    // Функция разницы в месяцах (полные месяцы)
+    // Полные месяцы
     function getMonthDiff(date1, date2) {
       let years = date2.getFullYear() - date1.getFullYear();
       let months = years * 12 + (date2.getMonth() - date1.getMonth());
-      // Проверяем, не нужно ли вычесть неполный месяц
       if (date2.getDate() < date1.getDate()) {
         months--;
       }
       return months;
     }
 
-    // Функция разницы в неделях
     function getWeekDiff(date1, date2) {
       const oneWeek = 1000 * 60 * 60 * 24 * 7;
       return Math.floor((date2 - date1) / oneWeek);
@@ -216,12 +196,10 @@
         return;
       }
       
-      // Определяем выбранный таймфрейм (недели/месяцы/годы)
       const timeframe = document.querySelector('input[name="timeframe"]:checked').value;
       
-      // Считаем, сколько "интервалов" человек уже прожил
       let livedIntervals = 0;
-      let intervalsPerYear = 52; // по умолчанию (недели)
+      let intervalsPerYear = 52;
       let totalIntervals = 80 * 52;
 
       if (timeframe === 'week') {
@@ -232,33 +210,28 @@
         livedIntervals = getMonthDiff(birthDate, today);
         intervalsPerYear = 12;
         totalIntervals = 80 * 12;
-      } else if (timeframe === 'year') {
+      } else {
         livedIntervals = getYearDiff(birthDate, today);
         intervalsPerYear = 1;
         totalIntervals = 80;
       }
 
-      // Для расчета процентов: если старше 80, ограничиваем 100%
       let livedPercent = (livedIntervals / totalIntervals) * 100;
       if (livedPercent > 100) livedPercent = 100;
       let remainPercent = 100 - livedPercent;
-      
       livedPercent = livedPercent.toFixed(2);
       remainPercent = remainPercent.toFixed(2);
 
-      // Считываем важные даты и цвета
+      // Считываем важные даты
       const importantDateInputs = document.querySelectorAll('.important-date');
       const importantColorInputs = document.querySelectorAll('.important-color');
       let specialMap = {}; 
-      // ключ: номер интервала, значение: цвет (если несколько дат в один интервал — возьмём последнюю)
-
       for (let i = 0; i < importantDateInputs.length; i++) {
         const d = importantDateInputs[i].value;
-        if (!d) continue; // если дата не выбрана, пропускаем
+        if (!d) continue;
         const color = importantColorInputs[i].value || '#ffffff';
         const specialDate = new Date(d);
 
-        // Вычисляем номер интервала
         let index = 0;
         if (timeframe === 'week') {
           index = getWeekDiff(birthDate, specialDate);
@@ -273,90 +246,75 @@
         }
       }
 
-      // Очищаем предыдущий вывод
       document.getElementById('result').innerHTML = '';
-
-      // Выводим проценты над таблицей
       const percentDiv = document.getElementById('percent-info');
       percentDiv.textContent = `Прожито: ${livedPercent}% | Осталось: ${remainPercent}% (до 80 лет)`;
 
       const resultDiv = document.getElementById('result');
       const startYear = birthDate.getFullYear();
 
-      // === Если выбраны "НЕДЕЛИ" или "МЕСЯЦЫ", рисуем 80 строк, в каждой intervalsPerYear кружков ===
+      // Режим "Недели" или "Месяцы" – 80 строк
       if (timeframe === 'week' || timeframe === 'month') {
         for (let year = 0; year < 80; year++) {
           const yearDiv = document.createElement('div');
           yearDiv.classList.add('year-row');
           
-          // Вычисляем календарный год
           const actualYear = startYear + year;
-          
-          // Сколько лет исполнится (year+1)
           const age = year + 1;
           const word = getYearWord(age);
 
-          // Например: "1989 (1 год)", "1990 (2 года)", ...
           const yearLabel = document.createElement('span');
           yearLabel.textContent = `${actualYear} (${age} ${word}): `;
           yearLabel.style.display = 'inline-block';
           yearLabel.style.width = '150px';
           yearDiv.appendChild(yearLabel);
           
-          // Внутри каждой строки — intervalsPerYear кружков
           for (let w = 0; w < intervalsPerYear; w++) {
             const index = year * intervalsPerYear + w; 
             const circle = document.createElement('span');
             circle.classList.add('circle');
-            circle.style.backgroundColor = '#555'; // по умолчанию (будущий интервал)
-            
+            circle.style.backgroundColor = '#555'; // по умолчанию - будущее
+
             if (index < livedIntervals) {
-              // Прожитый
-              circle.style.backgroundColor = '#00ffcc';
+              circle.style.backgroundColor = '#00ffcc'; 
             }
-            
-            // Проверяем, не является ли это важной датой
             if (specialMap[index]) {
               circle.style.backgroundColor = specialMap[index];
             }
-            
             yearDiv.appendChild(circle);
           }
-          
           resultDiv.appendChild(yearDiv);
         }
-      
       } else {
-        // === Если выбраны "ГОДЫ", делаем одну строку (горизонтальный ряд из 80 кружков) ===
-        
-        // Один контейнер
+        // Режим "Годы" – одна горизонтальная строка из 80 кружочков
         const singleRow = document.createElement('div');
         singleRow.id = 'year-row-horizontal';
         
         for (let year = 0; year < 80; year++) {
-          const index = year; // В режиме "год" index совпадает с year
+          const index = year; 
           const actualYear = startYear + year;
           const age = year + 1;
           const word = getYearWord(age);
-          
-          // Создаем кружок
+
+          // Генерируем кружок
           const circle = document.createElement('span');
           circle.classList.add('circle');
-          circle.style.backgroundColor = '#555'; // будущий год
+          circle.style.backgroundColor = '#555'; 
           
-          // Если уже прожит (year < livedIntervals)
           if (year < livedIntervals) {
             circle.style.backgroundColor = '#00ffcc';
           }
-          
-          // Проверяем на важные даты
           if (specialMap[index]) {
             circle.style.backgroundColor = specialMap[index];
           }
           
-          // Подпись (title всплывает при наведении)
-          // Пример: "1989 (1 год)"
+          // Всплывающая подсказка при наведении
           circle.title = `${actualYear} (${age} ${word})`;
+          
+          // Показать тот же текст при клике
+          circle.addEventListener("click", function() {
+            alert(this.title);
+          });
           
           singleRow.appendChild(circle);
         }
