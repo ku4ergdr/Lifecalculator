@@ -11,13 +11,19 @@
       border-radius: 50%;
       display: inline-block;
       margin: 2px;
-      background-color: #cccccc; /* Светлый цвет по умолчанию */
+      vertical-align: middle; /* Чтобы кружочки были на одной линии с текстом */
     }
     
-    /* Блок для расположения кружочков */
+    /* Контейнер для каждой строки (года) */
+    .year-row {
+      margin-bottom: 5px; 
+    }
+    
+    /* Блок для расположения всех строк */
     #result {
       margin-top: 20px;
-      max-width: 800px; /* при желании можно изменить ширину */
+      max-width: 800px; /* при желании можно изменить */
+      font-family: sans-serif;
     }
   </style>
 </head>
@@ -44,7 +50,7 @@
       const birthDate = new Date(birthDateInput);
       const today = new Date();
       
-      // Вычисляем разницу в неделях
+      // Вычисляем разницу в неделях (в мс)
       const oneWeek = 1000 * 60 * 60 * 24 * 7;
       const livedWeeks = Math.floor((today - birthDate) / oneWeek);
       
@@ -55,26 +61,56 @@
       }
       
       // Всего недель до 80 лет (приблизительно)
-      const totalWeeks = 80 * 52;
+      const totalWeeks = 80 * 52; // 4160
       
       // Очищаем предыдущий результат
       const resultDiv = document.getElementById('result');
       resultDiv.innerHTML = '';
       
-      // Генерируем 4160 кружочков; часть из них будет "прожитой"
-      for (let i = 0; i < totalWeeks; i++) {
-        const circle = document.createElement('span');
-        circle.classList.add('circle');
+      // Подсчёт процентов (с учётом, если человек старше 80)
+      let livedPercent = (livedWeeks / totalWeeks) * 100;
+      if (livedPercent > 100) livedPercent = 100; // «зажимаем» в 100%, если старше 80
+      let remainPercent = 100 - livedPercent;
+
+      livedPercent = livedPercent.toFixed(2);
+      remainPercent = remainPercent.toFixed(2);
+
+      // Генерируем 80 строк, по 52 кружочка в каждой
+      for (let year = 0; year < 80; year++) {
+        // Создаем контейнер для каждой «строки-года»
+        const yearContainer = document.createElement('div');
+        yearContainer.classList.add('year-row');
         
-        // Прожитые недели делаем более тёмными
-        if (i < livedWeeks) {
-          circle.style.backgroundColor = '#333333';
-        } else {
-          circle.style.backgroundColor = '#cccccc';
+        // Надпись "Год n:"
+        const yearLabel = document.createElement('span');
+        yearLabel.textContent = `Год ${year + 1}: `;
+        yearLabel.style.display = 'inline-block';
+        yearLabel.style.width = '80px'; 
+        yearContainer.appendChild(yearLabel);
+        
+        // Добавляем 52 кружочка
+        for (let w = 0; w < 52; w++) {
+          const index = year * 52 + w;
+          const circle = document.createElement('span');
+          circle.classList.add('circle');
+          
+          // Прожитые недели делаем более тёмными
+          if (index < livedWeeks) {
+            circle.style.backgroundColor = '#333333';
+          } else {
+            circle.style.backgroundColor = '#cccccc';
+          }
+          
+          yearContainer.appendChild(circle);
         }
         
-        resultDiv.appendChild(circle);
+        resultDiv.appendChild(yearContainer);
       }
+
+      // Добавляем подпись о проценте прожитого/оставшегося
+      const percentInfo = document.createElement('p');
+      percentInfo.textContent = `Прожито: ${livedPercent}% | Осталось: ${remainPercent}% (до 80 лет)`;
+      resultDiv.appendChild(percentInfo);
     }
   </script>
   
