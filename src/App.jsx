@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Tabs from './components/Tabs';
+import StatsView from './components/StatsView';
 
 function App() {
   const [birthDate, setBirthDate] = useState('');
@@ -29,15 +31,43 @@ function App() {
 
     setWeeksData({
       weeks,
-      livedPercent: livedPercent.toFixed(2),
-      remainPercent: remainPercent.toFixed(2),
+      livedPercent,
+      remainPercent,
+      livedWeeks,
+      totalWeeks,
     });
   };
 
+  const gridContent = weeksData && (
+    <div className="space-y-2 max-h-[60vh] overflow-auto pr-2">
+      {weeksData.weeks.map((row, year) => (
+        <div key={year} className="flex items-center">
+          <span className="w-10 text-right mr-2 text-sm opacity-80">{year + 1}</span>
+          <div className="grid grid-cols-52 gap-[2px]">
+            {row.map((lived, i) => (
+              <div
+                key={i}
+                className={`w-3 h-3 rounded-full ${lived ? 'bg-green-500' : 'bg-gray-300'}`}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const statsContent = weeksData && (
+    <StatsView
+      weeksLived={weeksData.livedWeeks}
+      totalWeeks={weeksData.totalWeeks}
+      livedPercent={weeksData.livedPercent}
+    />
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-700 via-purple-600 to-pink-500 text-white p-4">
-      <h1 className="text-3xl text-center font-bold mb-6">Подсчет прожитых недель</h1>
-      <div className="max-w-md mx-auto bg-white/10 p-6 rounded-xl backdrop-blur-md">
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-4">
+      <h1 className="text-2xl font-semibold text-center mb-6">Life Calculator</h1>
+      <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow">
         <div className="mb-4">
           <label htmlFor="birthdate" className="block mb-2 font-medium">Дата рождения</label>
           <input
@@ -45,11 +75,11 @@ function App() {
             id="birthdate"
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
-            className="w-full bg-white/20 p-2 rounded text-gray-800"
+            className="w-full border rounded p-2"
           />
         </div>
         <button
-          className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded"
+          className="w-full bg-black text-white py-2 rounded hover:bg-gray-800"
           onClick={calculateWeeks}
         >
           Показать результат
@@ -57,25 +87,13 @@ function App() {
       </div>
 
       {weeksData && (
-        <div className="mt-8 bg-white/10 p-4 rounded-xl backdrop-blur-md">
-          <div className="space-y-2 max-h-[60vh] overflow-auto pr-2">
-            {weeksData.weeks.map((row, year) => (
-              <div key={year} className="flex items-center">
-                <span className="w-10 text-right mr-2 text-sm opacity-80">{year + 1}</span>
-                <div className="grid grid-cols-52 gap-[2px]">
-                  {row.map((lived, i) => (
-                    <div
-                      key={i}
-                      className={`w-3 h-3 rounded-full ${lived ? 'bg-gray-200' : 'bg-gray-500'}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center font-semibold mt-4">
-            Прожито: {weeksData.livedPercent}% | Осталось: {weeksData.remainPercent}% (до 80 лет)
-          </p>
+        <div className="mt-8">
+          <Tabs
+            tabs={[
+              { label: 'Сетка', content: gridContent },
+              { label: 'Статистика', content: statsContent },
+            ]}
+          />
         </div>
       )}
     </div>
