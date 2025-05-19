@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Подсчет прожитых недель</title>
+  <style>
+    /* Стили для кружочков */
+    .circle {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin: 2px;
+      vertical-align: middle; /* Чтобы кружочки были на одной линии с текстом */
+    }
+    
+    /* Контейнер для каждой строки (года) */
+    .year-row {
+      margin-bottom: 5px; 
+    }
+    
+    /* Блок для расположения всех строк */
+    #result {
+      margin-top: 20px;
+      max-width: 800px; /* при желании можно изменить */
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Подсчет прожитых недель</h1>
+  
+  <div>
+    <label for="birthdate">Дата рождения:</label>
+    <input type="date" id="birthdate">
+    <button onclick="calculateWeeks()">Показать результат</button>
+  </div>
+  
+  <div id="result"></div>
+  
+  <script>
+    function calculateWeeks() {
+      const birthDateInput = document.getElementById('birthdate').value;
+      if (!birthDateInput) {
+        alert('Пожалуйста, введите дату рождения.');
+        return;
+      }
+      
+      const birthDate = new Date(birthDateInput);
+      const today = new Date();
+      
+      // Вычисляем разницу в неделях (в мс)
+      const oneWeek = 1000 * 60 * 60 * 24 * 7;
+      const livedWeeks = Math.floor((today - birthDate) / oneWeek);
+      
+      // Если дата рождения в будущем
+      if (livedWeeks < 0) {
+        alert('Дата рождения не может быть в будущем!');
+        return;
+      }
+      
+      // Всего недель до 80 лет (приблизительно)
+      const totalWeeks = 80 * 52; // 4160
+      
+      // Очищаем предыдущий результат
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+      
+      // Подсчёт процентов (с учётом, если человек старше 80)
+      let livedPercent = (livedWeeks / totalWeeks) * 100;
+      if (livedPercent > 100) livedPercent = 100; // «зажимаем» в 100%, если старше 80
+      let remainPercent = 100 - livedPercent;
+
+      livedPercent = livedPercent.toFixed(2);
+      remainPercent = remainPercent.toFixed(2);
+
+      // Генерируем 80 строк, по 52 кружочка в каждой
+      for (let year = 0; year < 80; year++) {
+        // Создаем контейнер для каждой «строки-года»
+        const yearContainer = document.createElement('div');
+        yearContainer.classList.add('year-row');
+        
+        // Надпись "Год n:"
+        const yearLabel = document.createElement('span');
+        yearLabel.textContent = `Год ${year + 1}: `;
+        yearLabel.style.display = 'inline-block';
+        yearLabel.style.width = '80px'; 
+        yearContainer.appendChild(yearLabel);
+        
+        // Добавляем 52 кружочка
+        for (let w = 0; w < 52; w++) {
+          const index = year * 52 + w;
+          const circle = document.createElement('span');
+          circle.classList.add('circle');
+          
+          // Прожитые недели делаем более тёмными
+          if (index < livedWeeks) {
+            circle.style.backgroundColor = '#333333';
+          } else {
+            circle.style.backgroundColor = '#cccccc';
+          }
+          
+          yearContainer.appendChild(circle);
+        }
+        
+        resultDiv.appendChild(yearContainer);
+      }
+
+      // Добавляем подпись о проценте прожитого/оставшегося
+      const percentInfo = document.createElement('p');
+      percentInfo.textContent = `Прожито: ${livedPercent}% | Осталось: ${remainPercent}% (до 80 лет)`;
+      resultDiv.appendChild(percentInfo);
+    }
+  </script>
+  
+</body>
+</html>
